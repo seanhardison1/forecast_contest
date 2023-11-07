@@ -35,10 +35,10 @@ weath_df <- read_csv(here::here("data/KCHO 2020-01-01 to 2023-11-03.csv")) %>%
   dplyr::summarise(temp_air = mean(temp_air),
                    precip = mean(precip)) %>% 
   mutate(hr = 1:nrow(.)) %>%
-  add_row(hr = (max(.$hr) + 1):(max(.$hr) + 48),
+  add_row(hr = (max(.$hr) + 1):(max(.$hr) + 96),
           datetime = 
             seq(max(.$datetime, na.rm = T) + hours(1),
-                (max(.$datetime, na.rm = T) + hours(48)),
+                (max(.$datetime, na.rm = T) + hours(96)),
                 by = "hour")) %>%  
   {. ->> connect_df} %>%
   filter(!is.na(temp_air)) %>% 

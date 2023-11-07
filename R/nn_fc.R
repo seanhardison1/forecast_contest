@@ -9,39 +9,55 @@ library(feasts)
 
 source(here::here("R/process.R"))
 
+train <- weath_df# %>% 
+  # filter(year(datetime) == 2022)
+
+train_df <- train %>% as.data.frame()
+
+test <- weath_df %>% 
+  filter(year(datetime) == 2023) %>% 
+  slice(1:48)
+
 # fit neural network model
-nn_fit <- weath_df %>% 
+nn_fit <- train %>%
   model(
-    nn2 = NNETAR(temp_air, n_nodes = 20),
+    # nn2 = NNETAR(temp_air, n_nodes = 10),
+    # nn3 = NNETAR(temp_air, n_nodes = 20),
+    # nn4 = NNETAR(temp_air, n_nodes = 10, n_networks = 25),
+    nn5 = NNETAR(temp_air, n_nodes = 20, n_networks = 25),
   )
 
 #model accuracy
 nn_fit %>% accuracy()
 
-# simulate from model and visualize
-nn_fit %>% 
-  generate(times = 200, h = 48) |>
-  autoplot(.sim) +
-  autolayer(weath_df %>% 
-              filter(datetime > as.Date("2023-11-01")) %>% 
-              as_tsibble(index = hr), temp_air) +
-  guides(color = "none")
+fc <- nn_fit %>% forecast(h = 51)
 
-# compare summary stats with smap projections
-# load(here::here("data/temp_pred_smap.rdata"))
-# 
-# temp_pred_smap %>% 
-#   dplyr::summarise(max_temp_smap = max(temp_pred_smap),
-#                    min_temp_smap = min(temp_pred_smap))
+max_time <- train %>% pull(hr) %>% length
 
-nn_preds <- nn_fit |>
-  forecast(h = 48) 
+sm <- SMap( dataFrame = train_df,    # input data
+                lib     = paste(1, max_time - 51), # portion of data to train
+                pred    = paste(max_time - 51, max_time), # portion of data to predict
+                columns = "temp_air",
+                target  = "temp_air",
+                Tp = 51,
+                E = 9)
 
-nn_preds %>%   
-  autoplot()
+sm_proj <- sm$predictions %>% 
+  filter(!is.na(Predictions)) %>% 
+  mutate(hr = seq(max_time,
+                  max_time + 51, by = 1)) %>% 
+  # filter(datetime > as.Date("2023-11-01")) %>% 
+  as_tsibble(index = hr) 
+
+train %>% 
+  filter(datetime > as.Date("2023-11-01")) %>% 
+  autoplot() +
+  autolayer(fc, .mean) +
+  autolayer(sm_proj, Predictions)
+  
 
 nn_pred_out <- 
-  nn_preds %>% 
+  fc %>% 
   as.data.frame() %>% 
   # mutate(temp_air_nn = .mean * 9/5 + 32) %>% 
   dplyr::select(hr, temp_air_nn = .mean) %>%

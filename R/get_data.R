@@ -39,6 +39,6 @@ weather <-
 
 fn <- paste(Sys.Date(),Sys.time(), "weather.csv", sep = "_")
 
-write_csv(weather, file = paste0("/users/seanhardison/documents/git/weather_forecasting/data/queries/",fn))
+write_csv(weather, file = paste0("/users/seanhardison/documents/git/forecast_contest/data/queries/",fn))
 
 
