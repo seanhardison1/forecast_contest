@@ -79,3 +79,10 @@ nn_pred_out %>%
   group_by(date) %>% 
   dplyr::summarise(max_nn = max(temp_air_nn),
                    min_nn = min(temp_air_nn))
+
+sm_proj %>% 
+  as.data.frame() %>% 
+  mutate(date = day(ymd_hms(datetime))) %>% view
+  group_by(date) %>% 
+  dplyr::summarise(max_smap = max(Predictions),
+                   min_smap = min(Predictions))
