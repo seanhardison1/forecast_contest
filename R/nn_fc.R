@@ -82,7 +82,7 @@ nn_pred_out %>%
 
 sm_proj %>% 
   as.data.frame() %>% 
-  mutate(date = day(ymd_hms(datetime))) %>% view
+  mutate(date = day(ymd_hms(datetime))) %>% 
   group_by(date) %>% 
   dplyr::summarise(max_smap = max(Predictions),
                    min_smap = min(Predictions))
