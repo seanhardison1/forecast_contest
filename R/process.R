@@ -12,8 +12,8 @@ for (i in list.files(here::here("data/queries/"))){
   assign("weath", rbind(weath, n))
 }
 
-weath_df2 <- weath %>%
-  filter(as.Date(datetime) < as.Date("2023-11-20")) %>% 
+weath_df2 <- weath %>% 
+  filter(as.Date(datetime) < as.Date("2023-11-28")) %>%
   distinct() %>% 
   dplyr::select(datetime, temp_air, precip = precip_1hr) %>% 
   mutate(precip = ifelse(is.na(precip), 0, precip),

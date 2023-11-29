@@ -9,14 +9,24 @@ library(feasts)
 
 source(here::here("R/process.R"))
 
-train <- weath_df# %>% 
-  # filter(year(datetime) == 2022)
+train <- weath_df %>% 
+  filter(as.Date(datetime) < as.Date("2023-11-21"))
+
+train %>% 
+  filter(as.Date(datetime) < as.Date("2023-11-21")) %>% 
+  autoplot(.,temp_air)
+
 
 train_df <- train %>% as.data.frame()
 
-test <- weath_df %>% 
-  filter(year(datetime) == 2023) %>% 
-  slice(1:48)
+# train %>% 
+# filter(year(datetime) == 2023) %>%
+#   slice_tail(n = 96) %>% 
+#   autoplot(.,temp_air)
+# 
+# test <- weath_df %>% 
+#   filter(year(datetime) == 2023) %>%
+#   slice(1:48)
 
 # fit neural network model
 nn_fit <- train %>%
@@ -28,9 +38,9 @@ nn_fit <- train %>%
   )
 
 #model accuracy
-nn_fit %>% accuracy()
+# nn_fit %>% accuracy()
 
-fc <- nn_fit %>% forecast(h = 51)
+fc <- nn_fit %>% forecast(h = 48)
 
 max_time <- train %>% pull(hr) %>% length
 
@@ -76,7 +86,7 @@ nn_pred_out <-
 
 nn_pred_out %>% 
   mutate(date = as.Date(datetime)) %>% 
-  group_by(date) %>% 
+  group_by(date) %> % 
   dplyr::summarise(max_nn = max(temp_air_nn),
                    min_nn = min(temp_air_nn))
 
